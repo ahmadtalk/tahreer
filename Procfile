@@ -1,1 +1,1 @@
-web: gunicorn tahreer:app
+web: gunicorn app:app
