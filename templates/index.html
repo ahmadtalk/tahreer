@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>منصة تدقيق النصوص</title>
+  <!-- Bootstrap RTL CSS من CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+  <!-- ملف الثيم الخاص بك (إن وجد) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  <style>
+    /* حاوية المحرر العامة */
+    .editor-wrapper {
+      max-width: 1200px;
+      margin: 20px auto; /* هامش علوي وسفلي 20px */
+      padding: 20px;
+      background-color: #FFFFFF;
+      border: 1px solid #ccc;
+      position: relative;
+    }
+    /* شريط الأدوات الخارجي */
+    #toolbar-container {
+      margin-bottom: 10px;
+      border: none;
+      background: none;
+      padding: 0;
+    }
+    /* منطقة تحرير النص */
+    #editor-container {
+      /* يُستبدل المحتوى بمجرد تهيئة المحرر */
+    }
+    /* عداد الكلمات */
+    #wordCount {
+      font-size: 16px;
+      color: #2F3C4D;
+    }
+    /* منطقة الحالة (سبينر + رسالة) */
+    #statusArea {
+      font-size: 16px;
+      color: #2F3C4D;
+      text-align: right;
+    }
+    /* السبينر */
+    #spinner {
+      display: none;
+    }
+    /* رسالة الحالة */
+    #statusMessage {
+      font-size: 16px;
+      color: #2F3C4D;
+    }
+    /* تنسيق الأزرار (أزرار التحكم) */
+    .toggle-btn {
+      margin: 10px 5px;
+    }
+    /* منطقة عرض جدول التصحيحات */
+    #correctionsTable {
+      margin-top: 20px;
+    }
+    /* زيادة ارتفاع منطقة تحرير CKEditor */
+    .ck-editor__editable {
+      min-height: 500px;
+    }
+  </style>
+  <!-- تضمين CKEditor 5 Decoupled Document Editor من CDN -->
+  <script src="https://cdn.ckeditor.com/ckeditor5/35.0.1/decoupled-document/ckeditor.js"></script>
+</head>
+<body>
+  {% include 'header.html' %}
+  
+  <div class="editor-wrapper">
+    <!-- شريط الأدوات الخارجي -->
+    <div id="toolbar-container"></div>
+    
+    <!-- منطقة تحرير النص -->
+    <div id="editor-container"></div>
+    
+    <!-- صف خاص بعدد الكلمات ومنطقة الحالة -->
+    <div class="row mt-3">
+      <div class="col-md-6">
+        <div id="wordCount">عدد الكلمات: 0</div>
+      </div>
+      <div class="col-md-6 text-end">
+        <div id="statusArea">
+          <div id="spinner">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">جاري المعالجة...</span>
+            </div>
+          </div>
+          <div id="statusMessage"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- صف لأزرار التحكم -->
+    <div class="text-center my-3">
+      <button id="proofreadBtn" class="btn btn-primary toggle-btn">تدقيق النص</button>
+      <button id="restoreOriginalBtn" class="btn btn-secondary toggle-btn" style="display: none;">استرجاع النص الأصلي</button>
+      <button id="showCorrectedBtn" class="btn btn-secondary toggle-btn" style="display: none;">عرض النص المصحح</button>
+    </div>
+    
+    <!-- منطقة عرض جدول التصحيحات -->
+    <div id="correctionsTable"></div>
+  </div>
+  
+  {% include 'footer.html' %}
+  
+  <!-- تضمين Bootstrap JS من CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // متغيرات لتخزين النصوص
+    let originalText = "";
+    let correctedText = "";
+    
+    // تهيئة محرر CKEditor 5 Decoupled Document Editor مع دعم اللغة العربية والاتجاه RTL
+    DecoupledEditor
+      .create(document.querySelector('#editor-container'), {
+        language: 'ar',
+        toolbar: {
+          items: [
+            'heading', '|',
+            'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+            'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', '|',
+            'alignment', 'textDirectionality', '|',
+            'bulletedList', 'numberedList', 'outdent', 'indent', '|',
+            'link', 'blockQuote', 'insertTable', 'mediaEmbed', '|',
+            'undo', 'redo', 'removeFormat'
+          ]
+        }
+      })
+      .then(editor => {
+        window.editor = editor;
+        // إلحاق شريط الأدوات إلى الحاوية المخصصة
+        const toolbarContainer = document.querySelector('#toolbar-container');
+        toolbarContainer.appendChild(editor.ui.view.toolbar.element);
+        // تحديث عداد الكلمات عند تغيير المحتوى
+        editor.model.document.on('change:data', () => {
+          const content = editor.getData();
+          const textContent = content.replace(/<[^>]*>/g, '').trim();
+          const words = textContent ? textContent.split(/\s+/).length : 0;
+          document.getElementById('wordCount').innerText = "عدد الكلمات: " + words;
+        });
+      })
+      .catch(error => {
+        console.error('Error initializing CKEditor:', error);
+      });
+    
+    // التعامل مع زر "تدقيق النص"
+    document.getElementById('proofreadBtn').addEventListener('click', function() {
+      // حفظ النص الأصلي إذا لم يُحفظ مسبقاً
+      if (!originalText) {
+        originalText = window.editor.getData();
+        document.getElementById('restoreOriginalBtn').style.display = 'inline-block';
+        document.getElementById('showCorrectedBtn').style.display = 'inline-block';
+      }
+      // عرض السبينر ورسالة الحالة
+      document.getElementById('spinner').style.display = 'block';
+      document.getElementById('statusMessage').innerText = "جاري التدقيق...";
+      
+      const editorContent = window.editor.getData();
+      fetch('/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: editorContent })
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('spinner').style.display = 'none';
+        if (data.result) {
+          correctedText = data.result;
+          // تحديث محتوى المحرر مباشرة بالنص المصحح
+          window.editor.setData(correctedText);
+          document.getElementById('statusMessage').innerText = "تم التدقيق بنجاح.";
+        } else {
+          window.editor.setData("<p>خطأ: لم يتم استلام نتيجة.</p>");
+          document.getElementById('statusMessage').innerText = "حدث خطأ أثناء التدقيق.";
+        }
+        // بناء جدول التصحيحات وعرضه أسفل المحرر
+        let tableHTML = buildCorrectionsTable(data.corrections);
+        document.getElementById('correctionsTable').innerHTML = tableHTML;
+      })
+      .catch(error => {
+        document.getElementById('spinner').style.display = 'none';
+        window.editor.setData("<p>خطأ: " + error + "</p>");
+        document.getElementById('statusMessage').innerText = "حدث خطأ أثناء التدقيق.";
+        document.getElementById('correctionsTable').innerHTML = "";
+      });
+    });
+    
+    // زر استرجاع النص الأصلي
+    document.getElementById('restoreOriginalBtn').addEventListener('click', function() {
+      if (originalText) {
+        window.editor.setData(originalText);
+        document.getElementById('statusMessage').innerText = "تم استرجاع النص الأصلي.";
+      }
+    });
+    
+    // زر عرض النص المصحح
+    document.getElementById('showCorrectedBtn').addEventListener('click', function() {
+      if (correctedText) {
+        window.editor.setData(correctedText);
+        document.getElementById('statusMessage').innerText = "عرض النص المصحح.";
+      }
+    });
+    
+    // دالة لبناء جدول التصحيحات
+    function buildCorrectionsTable(corrections) {
+      if (!corrections || corrections.length === 0) {
+        return '<p>لا توجد تصحيحات متوفرة.</p>';
+      }
+      let tableHTML = '<table class="table table-bordered">';
+      tableHTML += '<thead><tr><th>الخطأ</th><th>النوع</th><th>الشرح</th></tr></thead><tbody>';
+      corrections.forEach(correction => {
+        tableHTML += `<tr>
+                        <td>${correction.error}</td>
+                        <td>${correction.type}</td>
+                        <td>${correction.explanation}</td>
+                      </tr>`;
+      });
+      tableHTML += '</tbody></table>';
+      return tableHTML;
+    }
+  </script>
+</body>
+</html>
