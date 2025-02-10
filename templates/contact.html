@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}اتصل بنا - موقعي{% endblock %}
+
+{% block content %}
+<div class="my-4" style="max-width: 600px; margin: 20px auto;">
+  <h1 class="mb-4">اتصل بنا</h1>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <form method="POST">
+    <div class="mb-3">
+      <label for="name" class="form-label">الاسم</label>
+      <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">البريد الإلكتروني</label>
+      <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="mb-3">
+      <label for="message" class="form-label">الرسالة</label>
+      <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">إرسال الرسالة</button>
+  </form>
+  <a class="btn btn-secondary mt-3" href="{{ url_for('index') }}">العودة للصفحة الرئيسية</a>
+</div>
+{% endblock %}

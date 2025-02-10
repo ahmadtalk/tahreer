@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات المطالبة - منصة تدقيق النصوص{% endblock %}
+
+{% block content %}
+  <div class="my-4" style="max-width: 800px; margin: 20px auto;">
+    <h1 class="mb-4">إعدادات المطالبة</h1>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form method="POST">
+      <div class="mb-3">
+        <label for="ai_prompt" class="form-label">نص المطالبة الحالي</label>
+        <textarea class="form-control" id="ai_prompt" name="ai_prompt" rows="6">{{ current_prompt }}</textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">تحديث المطالبة</button>
+    </form>
+    <a class="btn btn-secondary mt-3" href="{{ url_for('index') }}">العودة للصفحة الرئيسية</a>
+  </div>
+{% endblock %}

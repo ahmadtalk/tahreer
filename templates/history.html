@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}سجل التدقيق - موقعي{% endblock %}
+
+{% block content %}
+<div class="my-4">
+  <h1 class="mb-4">سجل التدقيق</h1>
+  {% if sessions %}
+    <div class="list-group">
+      {% for session in sessions %}
+        <div class="list-group-item">
+          <h5>التاريخ: {{ session.timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</h5>
+          <p><strong>النص المدخل:</strong></p>
+          <p>{{ session.input_text }}</p>
+          <p><strong>النص المصحح:</strong></p>
+          <p>{{ session.result_text }}</p>
+          {% if session.corrections %}
+            <p><strong>التصحيحات:</strong></p>
+            <p>{{ session.corrections }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>لم تقم بإجراء أي تدقيق بعد.</p>
+  {% endif %}
+  <a class="btn btn-secondary mt-3" href="{{ url_for('index') }}">العودة للصفحة الرئيسية</a>
+</div>
+{% endblock %}

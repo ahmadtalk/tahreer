@@ -1,0 +1,59 @@
+<!-- header.html -->
+<header style="width: 100%;">
+  <!-- Header Top: Background color changed to #2F3C4D -->
+  <div class="header-top" style="background-color: #2F3C4D; padding: 15px 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 20px;">
+      <!-- Logo with a simple right margin -->
+      <div class="logo" style="margin-right: 20px;">
+        <a href="{{ url_for('index') }}">
+          <img src="https://www.noonpost.com/wp-content/uploads/2025/02/noonpost-5761210.png" alt="Logo" style="max-height: 120px; display: block;">
+        </a>
+      </div>
+      <!-- Main Navigation (without Home link) -->
+      <nav class="main-nav">
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; background-color: transparent;">
+          <li style="margin-left: 20px;">
+            <a href="{{ url_for('about') }}" style="text-decoration: none; color: #fff; font-size: 1.1rem;">حول التطبيق</a>
+          </li>
+          <li style="margin-left: 20px;">
+            <a href="{{ url_for('contact') }}" style="text-decoration: none; color: #fff; font-size: 1.1rem;">اتصل بنا</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+  
+  <!-- Header Bottom: Background remains green (#48B36D), with reduced padding -->
+  <div class="header-bottom" style="background-color: #48B36D; padding: 5px 0;">
+    <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+      <nav class="sub-nav">
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; background-color: transparent;">
+          <li style="margin: 0 15px;">
+            <a href="{{ url_for('dashboard') }}" style="text-decoration: none; color: #fff; font-size: 1rem;">لوحة التحكم</a>
+          </li>
+          <li style="margin: 0 15px;">
+            <a href="{{ url_for('history') }}" style="text-decoration: none; color: #fff; font-size: 1rem;">سجل التدقيق</a>
+          </li>
+          <li style="margin: 0 15px;">
+            <a href="{{ url_for('settings') }}" style="text-decoration: none; color: #fff; font-size: 1rem;">الإعدادات</a>
+          </li>
+          {% if current_user.is_authenticated %}
+            <li style="margin: 0 15px;">
+              <span style="color: #fff; font-size: 1rem;">مرحباً, {{ current_user.username }}</span>
+            </li>
+            <li style="margin: 0 15px;">
+              <a href="{{ url_for('logout') }}" style="text-decoration: none; color: #fff; font-size: 1rem;">تسجيل الخروج</a>
+            </li>
+          {% else %}
+            <li style="margin: 0 15px;">
+              <a href="{{ url_for('login') }}" style="text-decoration: none; color: #fff; font-size: 1rem;">تسجيل الدخول</a>
+            </li>
+            <li style="margin: 0 15px;">
+              <a href="{{ url_for('register') }}" style="text-decoration: none; color: #fff; font-size: 1rem;">تسجيل</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>

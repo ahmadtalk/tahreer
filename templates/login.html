@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}تسجيل الدخول - موقعي{% endblock %}
+
+{% block content %}
+<div class="my-4" style="max-width: 500px; margin: 20px auto;">
+  <h1 class="mb-4">تسجيل الدخول</h1>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-warning">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <form method="POST">
+    <div class="mb-3">
+      <label for="email" class="form-label">البريد الإلكتروني</label>
+      <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">كلمة المرور</label>
+      <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+    <button type="submit" class="btn btn-primary">تسجيل الدخول</button>
+  </form>
+  <a class="btn btn-secondary mt-3" href="{{ url_for('register') }}">إنشاء حساب جديد</a>
+</div>
+{% endblock %}

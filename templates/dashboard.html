@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم - موقعي{% endblock %}
+
+{% block content %}
+<div class="my-4">
+  <h1 class="mb-4">لوحة التحكم</h1>
+  <p>عدد جلسات التدقيق: {{ total_sessions }}</p>
+  
+  <h2>إحصائيات التصحيحات</h2>
+  <ul class="list-group">
+    {% for key, value in stats.items() %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ key }}
+        <span class="badge bg-primary rounded-pill">{{ value }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+  
+  <a class="btn btn-secondary mt-3" href="{{ url_for('index') }}">العودة للصفحة الرئيسية</a>
+</div>
+{% endblock %}
