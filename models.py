@@ -8,7 +8,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
+    password = db.Column(db.String(256), nullable=False)  # تغيير من 150 إلى 256
     sessions = db.relationship('ProofreadSession', backref='user', lazy=True)
 
 class ProofreadSession(db.Model):
