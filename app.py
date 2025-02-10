@@ -1,13 +1,15 @@
+try:
+    from werkzeug.urls import url_decode
+except ImportError:
+    from werkzeug.urls import url_parse as url_decode
+
 import json
 import openai
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from models import db, User, ProofreadSession
-try:
-    from werkzeug.urls import url_decode
-except ImportError:
-    from werkzeug.urls import url_parse as url_decode
+
 
 app = Flask(__name__)
 app.secret_key = "SECRET_KEY"  # استبدل هذه القيمة بمفتاح سري آمن
