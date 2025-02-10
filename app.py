@@ -45,11 +45,6 @@ AI_PROMPT = (
 @app.route("/")
 def index():
     return render_template("index.html")
-    
-@app.route("/about")
-def about():
-    return render_template("about.html")
-
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -89,6 +84,20 @@ def logout():
     logout_user()
     flash("تم تسجيل الخروج.")
     return redirect(url_for("index"))
+
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    if request.method == "POST":
+        name = request.form.get("name")
+        email = request.form.get("email")
+        message = request.form.get("message")
+        flash("تم إرسال رسالتك. شكرًا لتواصلك معنا!")
+        return redirect(url_for("contact"))
+    return render_template("contact.html")
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
 
 @app.route("/check", methods=["POST"])
 def check_text():
