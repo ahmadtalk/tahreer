@@ -1,0 +1,210 @@
+/* theme.css */
+
+/* تعريف المتغيرات اللونية الأساسية */
+:root {
+  --page-bg: #DEE4ED;         /* خلفية الصفحة العامة (الخارج عن الحاوية) */
+  --body-bg: #FFFFFF;         /* خلفية المحتوى المركزي */
+  --text-color: #2F3C4D;       /* لون النصوص العادية */
+  --title-color: #824690;      /* لون العناوين */
+  --btn-color: #F45A25;        /* لون الأزرار */
+  --header-top-bg: #48B36D;    /* خلفية القسم العلوي للهدر */
+  --header-bottom-bg: #2F3C4D; /* خلفية القسم السفلي للهدر */
+  --footer-top-bg: #48B36D;    /* خلفية القسم العلوي للفوتر */
+  --footer-bottom-bg: #2F3C4D; /* خلفية القسم السفلي للفوتر */
+}
+
+/* الخلفية العامة للصفحة */
+body {
+  background-color: var(--page-bg);
+  margin: 0;
+  padding: 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--text-color);
+}
+
+/* الحاوية المركزية للمحتوى */
+.container {
+  background-color: var(--body-bg);
+  max-width: 1200px;
+  margin: 0 auto; /* لتوسيط المحتوى */
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* --- تصميم الهدر --- */
+header {
+  width: 100%;
+}
+
+/* القسم العلوي للهدر: يحتفظ بالحجم الحالي */
+.header-top {
+  background-color: var(--header-top-bg);
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-top .logo {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #fff;
+  text-decoration: none;
+}
+
+.header-top .main-menu {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  background-color: transparent; /* تأكد من شفافية الخلفية */
+}
+
+.header-top .main-menu li {
+  margin-left: 20px;
+}
+
+.header-top .main-menu li a {
+  text-decoration: none;
+  color: #fff;
+  font-size: 1.1rem;
+  transition: color 0.3s ease;
+}
+
+.header-top .main-menu li a:hover {
+  color: var(--btn-color);
+}
+
+/* القسم السفلي للهدر: ارتفاع أقل */
+.header-bottom {
+  background-color: var(--header-bottom-bg);
+  padding: 5px 20px; /* تقليل الارتفاع */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-bottom .sub-menu {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  background-color: transparent; /* تأكد من شفافية الخلفية */
+}
+
+.header-bottom .sub-menu li {
+  margin: 0 15px;
+}
+
+.header-bottom .sub-menu li a {
+  text-decoration: none;
+  color: #fff;  /* لون النص أبيض */
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.header-bottom .sub-menu li a:hover {
+  color: var(--btn-color);
+}
+
+/* --- تصميم الفوتر --- */
+footer {
+  width: 100%;
+  margin-top: 40px;
+}
+
+/* القسم العلوي للفوتر */
+.footer-top {
+  background-color: var(--footer-top-bg);
+  padding: 15px 20px;
+  text-align: center;
+  color: #fff;
+}
+
+/* القسم السفلي للفوتر: ارتفاع أقل */
+.footer-bottom {
+  background-color: var(--footer-bottom-bg);
+  padding: 5px 20px; /* تقليل الارتفاع */
+  text-align: center;
+  color: #fff;
+}
+
+/* --- تنسيق العناوين --- */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--title-color);
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
+/* --- تصميم الأزرار --- */
+.btn-primary {
+  background-color: var(--btn-color);
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #d04d20; /* ظل أغمق عند التحويم */
+}
+
+/* --- تنسيق الحقول والنماذج --- */
+.form-control {
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 1rem;
+}
+
+/* --- تنسيق محرر Quill --- */
+#editor-container {
+  background-color: var(--body-bg);
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  padding: 10px;
+  min-height: 200px;
+  margin-bottom: 20px;
+}
+
+/* --- تنسيق منطقة عرض النتيجة --- */
+#resultOutput {
+  background-color: var(--body-bg);
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  padding: 15px;
+  margin-top: 20px;
+  font-size: 1rem;
+  line-height: 1.6;
+  direction: rtl;
+  text-align: right;
+}
+
+/* --- تنسيقات إضافية لعناصر القائمة --- */
+.list-group-item {
+  background-color: var(--body-bg);
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+/* --- استجابة الهواتف --- */
+@media (max-width: 768px) {
+  .header-top, .header-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+  .header-top .main-menu,
+  .header-bottom .sub-menu {
+    flex-direction: column;
+    margin-top: 10px;
+  }
+  .header-top .main-menu li,
+  .header-bottom .sub-menu li {
+    margin: 5px 0;
+  }
+}
