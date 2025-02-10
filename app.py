@@ -10,11 +10,19 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from models import db, User, ProofreadSession
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "SECRET_KEY"  # استبدل هذه القيمة بمفتاح سري آمن
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.secret_key = os.getenv("SECRET_KEY", "fallback_secret_key")  # استخدم متغير بيئي
+openai.api_key = os.getenv("OPENAI_API_KEY")  # قم بتعيين مفتاح OpenAI
+
+# تغيير تكوين قاعدة البيانات
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///database.db")
+if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
+    app.config["SQLALCHEMY_DATABASE_URI"] = app.config["SQLALCHEMY_DATABASE_URI"].replace("postgres://", "postgresql://", 1)
 
 # تهيئة قاعدة البيانات
 db.init_app(app)
