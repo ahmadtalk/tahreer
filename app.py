@@ -1,24 +1,14 @@
-import os
 import json
 import openai
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from dotenv import load_dotenv
 from models import db, User, ProofreadSession
 
-# تحميل المتغيرات البيئية
-load_dotenv()
-
-# إنشاء التطبيق
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "fallback_secret_key")  # استخدم متغير بيئي
-openai.api_key = os.getenv("OPENAI_API_KEY")  # تعيين مفتاح OpenAI
-
-# إعداد قاعدة البيانات
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///database.db")
-if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
-    app.config["SQLALCHEMY_DATABASE_URI"] = app.config["SQLALCHEMY_DATABASE_URI"].replace("postgres://", "postgresql://", 1)
+app.secret_key = "SECRET_KEY"  # استبدل هذه القيمة بمفتاح سري آمن
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # تهيئة قاعدة البيانات
 db.init_app(app)
@@ -32,7 +22,7 @@ login_manager.init_app(app)
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
-# المتغير العالمي لمطالبة الذكاء الاصطناعي
+# المتغير العالمي لتعليمات الذكاء الاصطناعي (AI_PROMPT)
 AI_PROMPT = (
     "Please proofread the following Arabic text. Correct any spelling, grammar, and style errors. "
     "For each correction, specify the position (e.g., paragraph or line number if possible), "
@@ -85,6 +75,100 @@ def logout():
     flash("تم تسجيل الخروج.")
     return redirect(url_for("index"))
 
+@app.route("/check", methods=["POST"])
+def check_text():
+    text = request.json.get("text", "")
+    prompt = f"{AI_PROMPT}\n\nText:\n{text}"
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4-turbo",  # اعتماد GPT-4 Turbo
+            temperature=0.2,
+            messages=[
+                {
+                    "role": "system", 
+                    "content": "You are an expert Arabic proofreader. Provide corrections and detailed explanations in Arabic."
+                },
+                {
+                    "role": "user", 
+                    "content": prompt
+                }
+            ]
+        )
+        raw_output = response.choices[0].message.content.strip()
+        print("Raw output from AI:", raw_output)  # للمساعدة في التصحيح
+        
+        # إزالة حدود الكود إذا كانت موجودة (مثل ```json و```)
+        if raw_output.startswith("```"):
+            lines = raw_output.splitlines()
+            if lines[0].startsWith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startsWith("```"):
+                lines = lines[:-1]
+            raw_output = "\n".join(lines).strip()
+        
+        if not raw_output:
+            raise ValueError("لم يتم استلام نتيجة من الذكاء الاصطناعي.")
+        
+        parsed_output = json.loads(raw_output)
+        result_text = parsed_output.get("result", "")
+        corrections = parsed_output.get("corrections", [])
+        if not result_text:
+            result_text = "لا توجد أخطاء للتصحيح."
+        
+        if current_user.is_authenticated:
+            session_entry = ProofreadSession(
+                user_id=current_user.id,
+                input_text=text,
+                result_text=result_text,
+                corrections=json.dumps(corrections)
+            )
+            db.session.add(session_entry)
+            db.session.commit()
+        
+        return jsonify({"result": result_text, "corrections": corrections})
+    
+    except Exception as e:
+        print("Error in /check:", e)
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/history")
+@login_required
+def history():
+    sessions_entries = ProofreadSession.query.filter_by(user_id=current_user.id)\
+                                             .order_by(ProofreadSession.timestamp.desc()).all()
+    return render_template("history.html", sessions=sessions_entries)
+
+@app.route("/dashboard")
+@login_required
+def dashboard():
+    sessions_entries = ProofreadSession.query.filter_by(user_id=current_user.id)\
+                                             .order_by(ProofreadSession.timestamp.desc()).all()
+    total_sessions = len(sessions_entries)
+    stats = {"spelling": 0, "grammar": 0, "style": 0}
+    for s in sessions_entries:
+        if s.corrections:
+            try:
+                corr = json.loads(s.corrections)
+                for key, items in corr.items():
+                    stats[key] += len(items)
+            except Exception:
+                pass
+    return render_template("dashboard.html", total_sessions=total_sessions, stats=stats)
+
+@app.route("/settings", methods=["GET", "POST"])
+@login_required
+def settings():
+    global AI_PROMPT
+    if request.method == "POST":
+        new_prompt = request.form.get("ai_prompt", "")
+        if new_prompt:
+            AI_PROMPT = new_prompt
+            flash("تم تحديث إعدادات المطالبة بنجاح.")
+        else:
+            flash("لم يتم تحديث إعدادات المطالبة.")
+        return redirect(url_for("settings"))
+    return render_template("settings.html", current_prompt=AI_PROMPT)
+
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
@@ -99,37 +183,8 @@ def contact():
 def about():
     return render_template("about.html")
 
-@app.route("/dashboard")
-@login_required
-def dashboard():
-    return render_template("dashboard.html")
-
-@app.route("/check", methods=["POST"])
-def check_text():
-    text = request.json.get("text", "")
-    prompt = f"{AI_PROMPT}\n\nText:\n{text}"
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4-turbo",
-            temperature=0.2,
-            messages=[
-                {"role": "system", "content": "You are an expert Arabic proofreader. Provide corrections and detailed explanations in Arabic."},
-                {"role": "user", "content": prompt}
-            ]
-        )
-        raw_output = response.choices[0].message.content.strip()
-        parsed_output = json.loads(raw_output)
-        return jsonify({"result": parsed_output.get("result", ""), "corrections": parsed_output.get("corrections", [])})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/history")
-@login_required
-def history():
-    sessions_entries = ProofreadSession.query.filter_by(user_id=current_user.id).order_by(ProofreadSession.timestamp.desc()).all()
-    return render_template("history.html", sessions=sessions_entries)
-
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    print("بدء تشغيل التطبيق...")
+    app.run(debug=True)
