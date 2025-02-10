@@ -100,9 +100,9 @@ def check_text():
         # إزالة حدود الكود إذا كانت موجودة (مثل ```json و```)
         if raw_output.startswith("```"):
             lines = raw_output.splitlines()
-            if lines[0].startsWith("```"):
+            if lines[0].startswith("```"):
                 lines = lines[1:]
-            if lines and lines[-1].startsWith("```"):
+            if lines and lines[-1].startswith("```"):
                 lines = lines[:-1]
             raw_output = "\n".join(lines).strip()
         
