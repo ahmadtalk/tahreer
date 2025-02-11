@@ -182,6 +182,10 @@ def contact():
 @app.route("/about")
 def about():
     return render_template("about.html")
+    
+@app.route("/version")
+def version():
+    return "Version 1.0.2"
 
 if __name__ == "__main__":
     with app.app_context():
