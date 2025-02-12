@@ -4,6 +4,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from models import db, User, ProofreadSession
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "SECRET_KEY"  # استبدل هذه القيمة بمفتاح سري آمن
@@ -100,9 +102,9 @@ def check_text():
         # إزالة حدود الكود إذا كانت موجودة (مثل ```json و```)
         if raw_output.startswith("```"):
             lines = raw_output.splitlines()
-            if lines[0].startsWith("```"):
+            if lines[0].startswith("```"):
                 lines = lines[1:]
-            if lines and lines[-1].startsWith("```"):
+            if lines and lines[-1].startswith("```"):
                 lines = lines[:-1]
             raw_output = "\n".join(lines).strip()
         
